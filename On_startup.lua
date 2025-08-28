@@ -6,7 +6,7 @@
 local CONFIG = {
   LANG = "id",                     -- subtitle language code (e.g. "id", "en")
   FORMAT = "srt",                  -- subtitle format
-  DOWNLOAD_DIR = "/sdcard/1DMP/",  -- where to save subtitles
+  DOWNLOAD_DIR = "/sdcard/Download/",  -- where to save subtitles
   SOURCE = "all",                  -- wyzie source param
   ENCODING = nil,                  -- optional (&encoding=utf-8) or nil
   CURL_TIMEOUT = 30,               -- curl --max-time seconds
