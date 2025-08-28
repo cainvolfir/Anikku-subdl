@@ -3,7 +3,7 @@
 
 **A customizable Anikku custom-player button that automatically searches and downloads subtitles (SRT or other formats) from a Wyzie subtitle API using `curl` (Termux-friendly).**
 
-> **Target:** Anikku (an Aniyomi fork).  
+> **Target:** Anikku (an Aniyomi fork that have feature editing entry info).  
 > **Files in this repo** (paste the matching block into Anikku's Custom Button fields):
 - [On_startup.lua](./On_startup.lua) — **(required)** paste into Anikku → Custom Button → **On Startup**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
 - [On_tap.lua](./On_tap.lua) — paste into **On Tap** (manual re-run fallback).
@@ -21,8 +21,7 @@
    pkg update && pkg upgrade -y
    pkg install curl -y
    ```
-4. **Install Anikku** (Anikku is an Aniyomi fork). Example source: `https://github.com/komikku-app/anikku` — install the APK from the project's releases or the source you prefer.
-
+4. **Install [Anikku](https://github.com/komikku-app/anikku)**
 5. Open **Anikku → Settings → Player → Custom Buttons → Add custom button**.
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
@@ -32,14 +31,14 @@
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
      Save the button and mark it **primary** if you want the On Startup script to run automatically when you open a video.
 
-7. Add something to your Anikku library (movie or series) and open the entry.
+7. Add entry to your Anikku library (movie or series) and open the entry.
 
 8. **Edit the entry to include the IMDb ID**:
 
    * Open the entry → tap the overflow menu (three dots, top-right) → **Edit info** → paste the IMDb ID into the title field → **Save**.
      Tip: use the included [imdb\_id.user.js](./imdb_id.user.js) userscript to copy IMDb IDs quickly from IMDb pages (save as `imdb_id.user.js` and install in Tampermonkey/Violentmonkey).
 
-10. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
+9. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
 
    * Detect the IMDb ID (and season/episode for series) from the entry,
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
