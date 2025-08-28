@@ -17,9 +17,10 @@
 1. **Install [Termux](https://f-droid.org/en/packages/com.termux/)** 
 
 3. **Open Termux** and update packages & install `curl`:
+   ```bash
    pkg update && pkg upgrade -y
    pkg install curl -y
-
+   ```
 4. **Install Anikku** (Anikku is an Aniyomi fork). Example source: `https://github.com/komikku-app/anikku` — install the APK from the project's releases or the source you prefer.
 
 5. Open **Anikku → Settings → Player → Custom Buttons → Add custom button**.
@@ -35,20 +36,20 @@
 
 8. **Edit the entry to include the IMDb ID**:
 
-   * Open the entry → tap the overflow menu (three dots, top-right) → **Edit info** → paste the IMDb ID into the IMDb field → **Save**.
+   * Open the entry → tap the overflow menu (three dots, top-right) → **Edit info** → paste the IMDb ID into the title field → **Save**.
      Tip: use the included [imdb\_id.user.js](./imdb_id.user.js) userscript to copy IMDb IDs quickly from IMDb pages (save as `imdb_id.user.js` and install in Tampermonkey/Violentmonkey).
 
-9. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
+10. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
 
    * Detect the IMDb ID (and season/episode for series) from the entry,
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
    * Download **all** matching subtitles to the configured folder (default: `/sdcard/1DMP/`).
 
-10. Load a downloaded subtitle in Anikku by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
+11. Load a downloaded subtitle in Anikku by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
 
-11. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
+12. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
 
-12. **Long-press** the button to delete all `.srt` files from the download directory (the script will tell you how many files were deleted). This is useful to free storage quickly.
+13. **Long-press** the button to delete all `.srt` files from the download directory (the script will tell you how many files were deleted). This is useful to free storage quickly.
 
 ---
 
