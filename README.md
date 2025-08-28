@@ -36,8 +36,9 @@
 8. **Edit the entry to include the IMDb ID**:
 
    * Open the entry → tap the overflow menu (three dots, top-right) → **Edit info** → paste the IMDb ID into the title field → **Save**.
-> Make sure there's "S1 - E1" or something similar like that in your episode name. This will affect media-title.
-     Tip: use the included [imdb\_id.user.js](./imdb_id.user.js) userscript to copy IMDb IDs quickly from IMDb pages (save as `imdb_id.user.js` and install in Tampermonkey/Violentmonkey).
+>   * Make sure there's "S1 - E1" or something similar like that in your episode name. This will affect media-title.
+
+Tip: use the included [imdb\_id.user.js](./imdb_id.user.js) userscript to copy IMDb IDs quickly from IMDb pages (save as `imdb_id.user.js` and install in Tampermonkey/Violentmonkey).
 
 9. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
 
