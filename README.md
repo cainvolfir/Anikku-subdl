@@ -44,11 +44,11 @@
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
    * Download **all** matching subtitles to the configured folder (default: `/sdcard/1DMP/`).
 
-11. Load a downloaded subtitle in Anikku by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
+10. Load a downloaded subtitle in Anikku by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
 
-12. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
+11. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
 
-13. **Long-press** the button to delete all `.srt` files from the download directory (the script will tell you how many files were deleted). This is useful to free storage quickly.
+12. **Long-press** the button to delete all `.srt` files from the download directory (the script will tell you how many files were deleted). This is useful to free storage quickly.
 
 ---
 
@@ -66,7 +66,7 @@
 
   * `LANG` — language code (e.g. `"id"` for Indonesian, `"en"` for English)
   * `FORMAT` — subtitle format (default `"srt"`)
-  * `DOWNLOAD_DIR` — where to save subtitles (default `"/sdcard/1DMP/"`)
+  * `DOWNLOAD_DIR` — where to save subtitles (default `"/sdcard/Download/"`)
   * `SOURCE` — Wyzie `source` query (use `"all"` to aggregate)
   * `ENCODING` — optional (e.g. `"utf-8"`)
   * `CURL_TIMEOUT`, `SLEEP_LOG`, `OVERWRITE`, `DEBUG_SHOW_RESPONSE_SNIPPET`
