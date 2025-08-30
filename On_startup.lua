@@ -13,7 +13,7 @@ local CONFIG = {
   SLEEP_LOG = 0.45,                -- pause between aniyomi.show_text calls
   OVERWRITE = true,                -- overwrite existing files
   DEBUG_SHOW_RESPONSE_SNIPPET = true,
-  TMDB_API_KEY = "bcf833309792fce7460c16aeaff12f44", -- added TMDb key
+  TMDB_API_KEY = "", -- TMDb API key
   TMDB_SEARCH_MAX = 3 -- take top 3 results
 }
 
@@ -45,53 +45,102 @@ local function ensure_dir()
 end
 
 -- Robust media-title parsing (case-insensitive)
+-- Returns: imdb (if any), season (string or nil), episode (string or nil)
 local function parse_title_for_imdb_season_episode(title)
-  local upper = (title or ""):upper()
-  local imdb = title:match("^(tt%d+)") or upper:match("TT%d+")
+  local raw = title or ""
+  local upper = raw:upper()
+  local imdb = raw:match("^(tt%d+)") or upper:match("TT%d+")
   if imdb then imdb = imdb:lower() end -- normalize to lowercase 'tt...'
 
+  local lower = raw:lower()
+
   local season, episode
-  local s, e = upper:match("S(%d+)%s*%-?%s*E(%d+)")
+
+  -- Try patterns that capture both season and episode first
+  -- pattern order: most specific -> more general
+  local s, e
+
+  -- 1) "season 1 - episode 1" or "season 1 episode 1"
+  s, e = lower:match("season%s*(%d+)%s*[-:]?%s*episode%s*(%d+)")
+  if not s then
+    -- 2) "s1 - e1", "s01 e01", "s1e1", "s01e01"
+    s, e = lower:match("s%s*(%d+)%s*[-:]?%s*e%s*(%d+)")
+  end
+  if not s then
+    s, e = lower:match("s(%d+)e(%d+)")
+  end
+
   if s and e then
-    season, episode = s, e
-  else
-    s = upper:match("S(%d+)")
-    if s then
-      -- try to find episode after the S token
-      local pos = upper:find("S" .. s, 1, true)
-      if pos then
-        local after = upper:sub(pos + #("S" .. s))
-        local e2 = after:match("E(%d+)")
-        if e2 then episode = e2 end
-      end
-      season = s
-    end
-    if not episode then
-      -- fallback: first E anywhere
-      local ep = upper:match("E(%d+)")
-      if ep then episode = ep end
-    end
+    season, episode = tostring(tonumber(s)), tostring(tonumber(e))
+    return imdb, season, episode
+  end
+
+  -- If not both found, try season-only
+  local s_only = lower:match("season%s*(%d+)") or lower:match("s%s*(%d+)")
+  if s_only then
+    season = tostring(tonumber(s_only))
+  end
+
+  -- Try episode-only patterns (many possible forms)
+  local ep = lower:match("episode%s*(%d+)") or lower:match("ep%s*(%d+)") or lower:match("%s[eE]%s*(%d+)") or lower:match("e(%d+)")
+  if ep then
+    episode = tostring(tonumber(ep))
   end
 
   return imdb, season, episode
 end
 
--- NEW: extract "Judul" from media-title based on new format "Judul - ...".
--- Keeps it simple: split on " - " and trim.
+-- NEW: extract "Judul" from media-title more flexibly by removing common season/episode tokens
 local function extract_title_from_media_title(raw_title)
   if not raw_title or raw_title == "" then return nil end
-  -- split by " - " (with possible surrounding spaces)
+
+  local orig = raw_title
+  local lower = orig:lower()
+
+  -- helper to remove all occurrences of a pattern (pattern is a Lua pattern on the lowercased string)
+  local function remove_pattern(pattern)
+    local s, f = lower:find(pattern)
+    while s do
+      -- remove from orig using the same start/finish positions
+      orig = orig:sub(1, s - 1) .. orig:sub(f + 1)
+      lower = orig:lower()
+      s, f = lower:find(pattern)
+    end
+  end
+
+  -- Remove common season+episode patterns (both words and compact forms)
+  remove_pattern("season%s*%d+%s*[-:]?%s*episode%s*%d+") -- "Season 1 - Episode 1" or "Season 1 Episode 1"
+  remove_pattern("s%s*%d+%s*[-:]?%s*e%s*%d+")           -- "S1 - E1", "S01 E01"
+  remove_pattern("s%d+e%d+")                            -- "S01E01" compact
+
+  -- Remove remaining season-only / episode-only tokens
+  remove_pattern("season%s*%d+")
+  remove_pattern("episode%s*%d+")
+  remove_pattern("ep%s*%d+")
+  remove_pattern("%-?%s*[eE]%s*%d+") -- " - E01" or " E01" (best-effort; kept after other removals)
+
+  -- Remove trailing marker words like "movie", "film"
+  orig = orig:gsub("%s*%-?%s*[Mm]ovie%s*$", "")
+  orig = orig:gsub("%s*%-?%s*[Ff]ilm%s*$", "")
+
+  -- Trim surrounding separators and whitespace
+  orig = orig:gsub("^%s*[%-%:]+%s*", ""):gsub("%s*[%-%:]+%s*$", "")
+  orig = orig:gsub("^%s+", ""):gsub("%s+$", "")
+
+  -- If there are still hyphen-separated parts, prefer the first meaningful segment
   local parts = {}
-  for part in string.gmatch(raw_title, "([^%-]+)") do
-    -- trim spaces
+  for part in string.gmatch(orig, "([^%-]+)") do
     local p = part:gsub("^%s+", ""):gsub("%s+$", "")
     if p ~= "" then table.insert(parts, p) end
   end
-  -- prefer first non-empty part as title
   if #parts >= 1 then
     return parts[1]
   end
-  return nil
+
+  -- Fallback: return trimmed original
+  local title = orig:gsub("^%s+", ""):gsub("%s+$", "")
+  if title == "" then return nil end
+  return title
 end
 
 -- Helper: sanitize media string to safe filename
@@ -100,7 +149,7 @@ local function sanitize_filename(s)
   -- remove leading/trailing quotes and spaces
   s = s:gsub('^%s*"', ''):gsub('"%s*$', '')
   s = s:gsub('^%s*\'', ''):gsub('\'%s*$', '')
-  -- replace any non-alphanumeric (and dot) with underscore
+  -- replace any non-alphanumeric (and dot and dash) with underscore
   s = s:gsub("[^%w%.%-]+", "_")
   -- collapse multiple underscores
   s = s:gsub("_+", "_")
@@ -250,7 +299,6 @@ _G.downloadSubs = function()
         -- normalize to lowercase tt...
         got = tostring(got)
         if got:sub(1,2):lower() ~= "tt" then
-          -- just in case, ensure prefix
           got = "tt" .. got
         end
         table.insert(imdb_ids, got:lower())
