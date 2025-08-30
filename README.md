@@ -4,9 +4,8 @@
 **A customizable Aniyomi custom-button that automatically searches and downloads subtitles (SRT or other formats) from a Wyzie subtitle API using `curl` (Termux-friendly).**
 
 > **Files in this repo** (paste the matching block into Anikku's Custom Button fields):
-- [On_startup.lua](./On_startup.lua) — **(required)** paste into Anikku → Custom Button → **On Startup**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
-- [On_tap.lua](./On_tap.lua) — paste into **On Tap** (manual re-run fallback).
-- [On_long.lua](./On_long.lua) — paste into **On Long-Press** (deletes downloaded `.srt` files).
+- [On_tap.lua](./On_tap.lua) — paste into Aniyomi → Custom Button → **Lua code**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
+- [On_long.lua](./On_long.lua) — paste into **Lua code (on long-press)** (deletes the downloaded `.srt` files).
 
 ---
 
