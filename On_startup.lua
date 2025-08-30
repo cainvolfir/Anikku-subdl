@@ -12,7 +12,9 @@ local CONFIG = {
   CURL_TIMEOUT = 30,               -- curl --max-time seconds
   SLEEP_LOG = 0.45,                -- pause between aniyomi.show_text calls
   OVERWRITE = true,                -- overwrite existing files
-  DEBUG_SHOW_RESPONSE_SNIPPET = true
+  DEBUG_SHOW_RESPONSE_SNIPPET = true,
+  TMDB_API_KEY = "bcf833309792fce7460c16aeaff12f44", -- added TMDb key
+  TMDB_SEARCH_MAX = 3 -- take top 3 results
 }
 
 -- Expose CONFIG globally so other fields can read it
@@ -74,6 +76,92 @@ local function parse_title_for_imdb_season_episode(title)
   return imdb, season, episode
 end
 
+-- NEW: extract "Judul" from media-title based on new format "Judul - ...".
+-- Keeps it simple: split on " - " and trim.
+local function extract_title_from_media_title(raw_title)
+  if not raw_title or raw_title == "" then return nil end
+  -- split by " - " (with possible surrounding spaces)
+  local parts = {}
+  for part in string.gmatch(raw_title, "([^%-]+)") do
+    -- trim spaces
+    local p = part:gsub("^%s+", ""):gsub("%s+$", "")
+    if p ~= "" then table.insert(parts, p) end
+  end
+  -- prefer first non-empty part as title
+  if #parts >= 1 then
+    return parts[1]
+  end
+  return nil
+end
+
+-- Helper: sanitize media string to safe filename
+local function sanitize_filename(s)
+  if not s then return "subtitle" end
+  -- remove leading/trailing quotes and spaces
+  s = s:gsub('^%s*"', ''):gsub('"%s*$', '')
+  s = s:gsub('^%s*\'', ''):gsub('\'%s*$', '')
+  -- replace any non-alphanumeric (and dot) with underscore
+  s = s:gsub("[^%w%.%-]+", "_")
+  -- collapse multiple underscores
+  s = s:gsub("_+", "_")
+  -- trim underscores
+  s = s:gsub("^_+", ""):gsub("_+$", "")
+  if s == "" then s = "subtitle" end
+  return s
+end
+
+-- NEW: Query TMDb search (multi) and return top N results (id + media_type)
+local function tmdb_search_top(title)
+  if not title or title == "" then return {} end
+  local key = CONFIG.TMDB_API_KEY
+  -- use curl --get and --data-urlencode for query safe encoding
+  local url = "https://api.themoviedb.org/3/search/multi?api_key=" .. key .. "&language=en-US&page=1&include_adult=false"
+  local args = {"curl", "-s", "--get", "--data-urlencode", "query=" .. title, url, "--max-time", tostring(CONFIG.CURL_TIMEOUT)}
+  local res = utils.subprocess({ capture_stdout = true, args = args, cancellable = false })
+  if not res or res.status ~= 0 or not res.stdout then
+    log("⚠️ TMDb search failed for title: " .. title)
+    return {}
+  end
+  local ok, parsed = pcall(utils.parse_json, res.stdout)
+  if not ok or not parsed or not parsed.results then
+    log("⚠️ TMDb returned no results for: " .. title)
+    return {}
+  end
+  local results = {}
+  for i, item in ipairs(parsed.results) do
+    if i > CONFIG.TMDB_SEARCH_MAX then break end
+    if item and item.id and item.media_type then
+      table.insert(results, {id = item.id, media_type = item.media_type})
+    end
+  end
+  return results
+end
+
+-- NEW: Given tmdb id + media_type, fetch external_ids to obtain imdb_id
+local function tmdb_get_imdb_id(tmdb_id, media_type)
+  if not tmdb_id or not media_type then return nil end
+  local key = CONFIG.TMDB_API_KEY
+  local base
+  if media_type == "movie" then
+    base = "https://api.themoviedb.org/3/movie/" .. tostring(tmdb_id) .. "/external_ids?api_key=" .. key
+  elseif media_type == "tv" then
+    base = "https://api.themoviedb.org/3/tv/" .. tostring(tmdb_id) .. "/external_ids?api_key=" .. key
+  else
+    -- skip other media types
+    return nil
+  end
+  local res = utils.subprocess({ capture_stdout = true, args = {"curl", "-s", "--max-time", tostring(CONFIG.CURL_TIMEOUT), base}, cancellable = false })
+  if not res or res.status ~= 0 or not res.stdout then
+    return nil
+  end
+  local ok, parsed = pcall(utils.parse_json, res.stdout)
+  if not ok or not parsed then return nil end
+  if parsed.imdb_id and parsed.imdb_id ~= "" then
+    return parsed.imdb_id
+  end
+  return nil
+end
+
 local function build_wyzie_url(imdb, season, episode)
   local base = "https://sub.wyzie.ru/search?id=" .. imdb ..
                "&language=" .. CONFIG.LANG ..
@@ -126,69 +214,127 @@ _G.downloadSubs = function()
   local title = mp.get_property("media-title") or ""
   local imdb, season, episode = parse_title_for_imdb_season_episode(title)
   if not imdb then
-    log("❌ Could not parse IMDb ID from media title: " .. (title ~= "" and title or "[empty]"))
-    return
+    log("ℹ️ IMDb not directly found in media-title. Will attempt TMDb search by extracted title.")
   end
+
   if season then
-    log("🎬 Series detected. IMDb=" .. imdb .. " Season=" .. tostring(season) .. " Episode=" .. tostring(episode or "N/A"))
+    log("🎬 Series detected. Season=" .. tostring(season) .. " Episode=" .. tostring(episode or "N/A"))
   else
-    log("🎬 Movie detected. IMDb=" .. imdb)
+    log("🎬 Movie or single detected.")
   end
 
-  -- Build and call Wyzie search
-  local wyzie_url = build_wyzie_url(imdb, season, episode)
-  log("🔍 Querying Wyzie: " .. wyzie_url)
-  local res = utils.subprocess({
-    capture_stdout = true,
-    args = {"curl", "-s", "--max-time", tostring(CONFIG.CURL_TIMEOUT), wyzie_url},
-    cancellable = false
-  })
-  if not res or res.status ~= 0 or not res.stdout then
-    log("❌ Wyzie query failed (curl error).")
-    return
-  end
+  -- Collect imdb_ids to query Wyzie: either the one parsed or those resolved via TMDb
+  local imdb_ids = {}
 
-  -- parse JSON safely
-  local ok, data = pcall(utils.parse_json, res.stdout)
-  if not ok or not data or #data == 0 then
-    log("❌ No subtitles found for the query.")
-    if CONFIG.DEBUG_SHOW_RESPONSE_SNIPPET and res.stdout then
-      local snippet = res.stdout:sub(1,200)
-      log("🔎 API response snippet: " .. (snippet .. (res.stdout:len() > 200 and "..." or "")))
+  if imdb then
+    table.insert(imdb_ids, imdb)
+  else
+    -- Extract title portion from media-title
+    local search_title = extract_title_from_media_title(title)
+    if not search_title then
+      log("❌ Could not extract title from media-title: " .. (title ~= "" and title or "[empty]"))
+      return
     end
-    return
-  end
-
-  -- Filter and download matches (download all with matching language/format)
-  local download_count = 0
-  for _, entry in ipairs(data) do
-    if entry and entry.url and (not entry.format or entry.format:lower() == CONFIG.FORMAT:lower()) then
-      local fname = (entry.id and tostring(entry.id) or tostring(os.time())) .. "." .. CONFIG.FORMAT
-      local outpath = CONFIG.DOWNLOAD_DIR .. fname
-
-      if not CONFIG.OVERWRITE then
-        local exists = utils.subprocess({ args = {"sh", "-c", "[ -f '" .. outpath .. "' ] && echo yes || echo no"}, capture_stdout = true })
-        if exists and exists.stdout and exists.stdout:match("yes") then
-          log("ℹ️ Skipping existing file: " .. outpath)
-          goto continue_download_loop
+    log("🔎 Searching TMDb for title: " .. search_title)
+    local tmdb_results = tmdb_search_top(search_title)
+    if not tmdb_results or #tmdb_results == 0 then
+      log("❌ No TMDb results found for: " .. search_title)
+      return
+    end
+    -- For each TMDb result (up to top N), fetch imdb id
+    for _, r in ipairs(tmdb_results) do
+      log("ℹ️ TMDb candidate: id=" .. tostring(r.id) .. " type=" .. tostring(r.media_type))
+      local got = tmdb_get_imdb_id(r.id, r.media_type)
+      if got then
+        log("✅ Resolved IMDB: " .. got)
+        -- normalize to lowercase tt...
+        got = tostring(got)
+        if got:sub(1,2):lower() ~= "tt" then
+          -- just in case, ensure prefix
+          got = "tt" .. got
         end
-      end
-
-      log("📥 Downloading: " .. (entry.display or entry.url))
-      local dl_args = {"curl", "-s", "-L", "--max-time", tostring(CONFIG.CURL_TIMEOUT), "-o", outpath, entry.url}
-      local dl_res = utils.subprocess({ args = dl_args, cancellable = false })
-      if dl_res and dl_res.status == 0 then
-        download_count = download_count + 1
-        log("✅ Saved: " .. outpath)
+        table.insert(imdb_ids, got:lower())
       else
-        log("⚠️ Download failed for: " .. (entry.url or "unknown"))
+        log("⚠️ No IMDB id for TMDb id=" .. tostring(r.id))
       end
-
-      ::continue_download_loop::
+    end
+    if #imdb_ids == 0 then
+      log("❌ Tidak ada IMDB id yang dapat di-resolve dari TMDb hasil pencarian.")
+      return
     end
   end
 
-  log("✅ Done. " .. tostring(download_count) .. " subtitle file(s) saved to " .. CONFIG.DOWNLOAD_DIR)
+  -- Remove duplicates in imdb_ids
+  local unique = {}
+  local uniq_list = {}
+  for _, v in ipairs(imdb_ids) do
+    if v and v ~= "" and not unique[v] then
+      unique[v] = true
+      table.insert(uniq_list, v)
+    end
+  end
+
+  -- For each imdb_id found, query Wyzie and download subtitles
+  local total_download_count = 0
+  for _, imdb_id in ipairs(uniq_list) do
+    log("🔍 Querying Wyzie for IMDb: " .. imdb_id)
+    local wyzie_url = build_wyzie_url(imdb_id, season, episode)
+    log("🔍 Wyzie URL: " .. wyzie_url)
+    local res = utils.subprocess({
+      capture_stdout = true,
+      args = {"curl", "-s", "--max-time", tostring(CONFIG.CURL_TIMEOUT), wyzie_url},
+      cancellable = false
+    })
+    if not res or res.status ~= 0 or not res.stdout then
+      log("❌ Wyzie query failed (curl error) for " .. imdb_id)
+    else
+      -- parse JSON safely
+      local ok, data = pcall(utils.parse_json, res.stdout)
+      if not ok or not data or #data == 0 then
+        log("❌ No subtitles found for the query imdb=" .. imdb_id)
+        if CONFIG.DEBUG_SHOW_RESPONSE_SNIPPET and res.stdout then
+          local snippet = res.stdout:sub(1,200)
+          log("🔎 API response snippet: " .. (snippet .. (res.stdout:len() > 200 and "..." or "")))
+        end
+      else
+        -- Filter and download matches (download all with matching language/format)
+        local download_count = 0
+        for _, entry in ipairs(data) do
+          if entry and entry.url and (not entry.format or entry.format:lower() == CONFIG.FORMAT:lower()) then
+            -- name file from entry.media (sanitized) and entry.id to ensure uniqueness
+            local media_name = entry.media or entry.display or ("id_" .. tostring(entry.id or os.time()))
+            local safe_name = sanitize_filename(media_name)
+            local fname = safe_name .. "_" .. (entry.id and tostring(entry.id) or tostring(os.time())) .. "." .. CONFIG.FORMAT
+            local outpath = CONFIG.DOWNLOAD_DIR .. fname
+
+            if not CONFIG.OVERWRITE then
+              local exists = utils.subprocess({ args = {"sh", "-c", "[ -f '" .. outpath .. "' ] && echo yes || echo no"}, capture_stdout = true })
+              if exists and exists.stdout and exists.stdout:match("yes") then
+                log("ℹ️ Skipping existing file: " .. outpath)
+                goto continue_download_loop
+              end
+            end
+
+            log("📥 Downloading: " .. (entry.display or entry.url))
+            local dl_args = {"curl", "-s", "-L", "--max-time", tostring(CONFIG.CURL_TIMEOUT), "-o", outpath, entry.url}
+            local dl_res = utils.subprocess({ args = dl_args, cancellable = false })
+            if dl_res and dl_res.status == 0 then
+              download_count = download_count + 1
+              total_download_count = total_download_count + 1
+              log("✅ Saved: " .. outpath)
+            else
+              log("⚠️ Download failed for: " .. (entry.url or "unknown"))
+            end
+
+            ::continue_download_loop::
+          end
+        end
+        log("✅ Done for imdb=" .. imdb_id .. ". " .. tostring(download_count) .. " subtitle file(s) saved to " .. CONFIG.DOWNLOAD_DIR)
+      end
+    end
+  end
+
+  log("✅ All done. Total saved: " .. tostring(total_download_count) .. " subtitle file(s) to " .. CONFIG.DOWNLOAD_DIR)
 end
 
 -- Run on startup only if this button is primary (Aniyomi placeholder)
