@@ -70,8 +70,7 @@
 
 This repo contains:
 
-* `On_startup.lua` — main script + `CONFIG`
-* `On_tap.lua` — manual trigger
+* `On_tap.lua` — main script + 'CONFIG'
 * `On_long.lua` — delete downloaded subtitles
 * `README.md`, `LICENSE` (MIT), `.gitignore`
 
