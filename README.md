@@ -3,7 +3,7 @@
 
 **A customizable Aniyomi custom-button that automatically searches and downloads subtitles (SRT or other formats) from a Wyzie subtitle API using `curl` (Termux-friendly).**
 
-> **Files in this repo** (paste the matching block into Anikku's Custom Button fields):
+> **Files in this repo** (paste the matching block into Aniyomi's Custom Button fields):
 - [On_tap.lua](./On_tap.lua) — paste into Aniyomi → Custom Button → **Lua code**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
 - [On_long.lua](./On_long.lua) — paste into **Lua code (on long-press)** (deletes the downloaded `.srt` files).
 
@@ -23,21 +23,17 @@
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
 
-   * **On Startup**: copy the contents of [On\_startup.lua](./On_startup.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP** You can get it just by Sign Up/Login on TMDB site. Also note the script assigns `_G.CONFIG` so other fields can read it.
-   * **On Tap**: copy the contents of [On\_tap.lua](./On_tap.lua).
+   * **On tap**: copy the contents of [On\_tap.lua](./On_tap.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP** You can get it just by Sign Up/Login on TMDB site. Also note the script assigns `_G.CONFIG` so other fields can read it.
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
-     Save the button and mark it **primary** if you want the On Startup script to run automatically when you open a video.
 
-9. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
+9. Open any episode or movie **wait for the video to load** then tap the custom button. The script code routine will:
 
-   * Detect the entry title (and season/episode for series) from the entry, and grab its IMDB ID
+   * Detect the entry title (and season/episode for series) from the entry, and grab its IMDB ID (The long algorithm is grab the entry title, find its TMDb ID using TMDb API key then use the founded TMDb ID to find its IMDb ID since searching the subtitle by Wyzie API is more accurate using IMDB ID)
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
    * Download **all** matching subtitles to the configured folder (default: `/sdcard/1DMP/`).
 
 10. Load a downloaded subtitle in Aniyomi by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
-
-11. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
-
+    
 12. **Long-press** the button to delete all `.srt` files from the download directory (the script will tell you how many files were deleted). This is useful to free storage quickly.
 
 ---
