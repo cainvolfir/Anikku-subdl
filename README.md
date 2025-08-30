@@ -1,12 +1,12 @@
 # Aniyomi — Wyzie Subtitle Downloader Button
 
-A simple **Aniyomi custom button** (Lua) that automatically searches and downloads subtitles (SRT or other formats) from the Wyzie subtitle API using `curl` (installed using termux).
+A simple **Aniyomi custom button** (Lua) that automatically searches, downloads, and loads subtitles (SRT or other formats) from the Wyzie subtitle API using `curl` (installed using termux).
 
 ---
 
 ## What this custom-button does
 
-This custom-button can do searching and downloading subtitle automatically using Wyzie API for your current-watching entry in Aniyomi
+This custom-button can do searching, downloading, and loading(to player) subtitle automatically using Wyzie API for your current-watching entry in Aniyom
 
 ---
 
@@ -32,9 +32,7 @@ pkg install curl -y
 
 6. Open any episode or movie and wait for the video to load. Tap the custom button:
 
-   * The script detects the title, season, and episode (if any), then using TMDb API key to search the TMDb ID by title, after TMDb ID found, it converts that to an IMDb ID, then queries Wyzie and downloads matching subtitles.
-
-7. In Aniyomi, add the downloaded `.srt` as an external subtitle (Player → Add external subtitle) and pick the file from your download folder.
+   * The script detects the title, season, and episode (if any), then using TMDb API key to search the TMDb ID by title, after TMDb ID found, it converts that to an IMDb ID, then queries Wyzie and downloads matching subtitles then load it automatically to the aniyomi internal player.
 
 8. Long-press the button to remove subtitle files from the download directory (the loaded subtitle stays active in memory).
 
@@ -43,7 +41,7 @@ pkg install curl -y
 ## Suggested workflow (recommended)
 
 1. Tap to download all available subtitles for the current entry.
-2. Load some `.srt` and check the subtitle timing/translation.
+2. Cycle through the subtitle to find matching(timing and translation) subtitle.
 3. If it's already matches, long-press to clear the download folder and free space — the currently loaded subtitle remains in the player.
 
 ---
