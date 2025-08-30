@@ -23,7 +23,7 @@
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
 
-   * **On tap**: copy the contents of [On\_tap.lua](./On_tap.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP** You can get it just by Sign Up/Login on TMDB site. Also note the script assigns `_G.CONFIG` so other fields can read it.
+   * **On tap**: copy the contents of [On\_tap.lua](./On_tap.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP (You can get it just by Sign Up/Login on TMDB site.)**
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
 
 9. Open any episode or movie **wait for the video to load** then tap the custom button. The script code routine will:
