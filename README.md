@@ -6,15 +6,7 @@ A simple **Aniyomi custom button** (Lua) that automatically searches and downloa
 
 ## What this custom-button does
 
-Tap the custom button while playing an episode or movie in Aniyomi: the script finds the title → looks up its IMDB ID via TMDb → queries Wyzie for matching subtitles → downloads them to your chosen folder.
-
----
-
-## Files in this repo
-
-* `On_tap.lua` — **Main script**. Paste into Aniyomi → Custom Button → Lua code. Edit the `CONFIG` block at the top to set language, download folder, TMDb API key, etc.
-* `On_long.lua` — Paste into the Lua Code (long-press) field. Function: Deletes downloaded subtitle files from the download folder.
-* `README.md`, `LICENSE` (MIT), `.gitignore`
+This custom-button can do searching and downloading subtitle automatically using Wyzie API for your current-watching entry in Aniyomi
 
 ---
 
@@ -35,12 +27,12 @@ pkg install curl -y
 
 5. Copy-paste code from this repo into the matching fields:
 
-   * **On tap**: paste `On_tap.lua`. Edit the `CONFIG` section at the top (language, download dir, TMDb API key, etc.) as you need.
-   * **On long-press**: paste `On_long.lua`.
+   * **On tap**: paste the code inside `On_tap.lua` file in custom button 'Lua code' field . Edit the `CONFIG` section at the top (language, download dir, TMDb API key, etc.) as you need.
+   * **On long-press**: paste the code inside `On_long.lua` file in custom button 'Lua code (long-press)' field.
 
 6. Open any episode or movie and wait for the video to load. Tap the custom button:
 
-   * The script detects the title with season and episode (if any), finds the TMDb ID (using your TMDb API key), converts that to an IMDb ID, then queries Wyzie and downloads matching subtitles.
+   * The script detects the title, season, and episode (if any), then using TMDb API key to search the TMDb ID by title, after TMDb ID found, it converts that to an IMDb ID, then queries Wyzie and downloads matching subtitles.
 
 7. In Aniyomi, add the downloaded `.srt` as an external subtitle (Player → Add external subtitle) and pick the file from your download folder.
 
