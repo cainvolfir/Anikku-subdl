@@ -58,7 +58,9 @@ Edit the `CONFIG` table at the top of `On_tap.lua`. Important keys:
 * `SOURCE` — Wyzie `source` query (use `"all"` to aggregate sources).
 * `ENCODING` — optional (e.g. `"utf-8"`).
 * `CURL_TIMEOUT`, `SLEEP_LOG`, `OVERWRITE`, `DEBUG_SHOW_RESPONSE_SNIPPET` — advanced/debug options.
-* **TMDB\_API\_KEY** — *required*.
+* **TMDB\_API\_KEY** — *required*
+* `TMDB_SEARCH_MAX` — Set max similar title processed
+* `MAX_PER_IMDB` — Set max subtitle downloaded per title
 
 ---
 
