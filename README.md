@@ -7,7 +7,6 @@
 - [On_startup.lua](./On_startup.lua) — **(required)** paste into Anikku → Custom Button → **On Startup**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
 - [On_tap.lua](./On_tap.lua) — paste into **On Tap** (manual re-run fallback).
 - [On_long.lua](./On_long.lua) — paste into **On Long-Press** (deletes downloaded `.srt` files).
-- [imdb_id.user.js](./imdb_id.user.js) — optional userscript to help copy IMDb IDs from IMDb pages (save as `.user.js` and install in Tampermonkey/Violentmonkey).
 
 ---
 
