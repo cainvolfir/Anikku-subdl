@@ -23,7 +23,7 @@
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
 
-   * **On Startup**: copy the contents of [On\_startup.lua](./On_startup.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). Also note the script assigns `_G.CONFIG` so other fields can read it.
+   * **On Startup**: copy the contents of [On\_startup.lua](./On_startup.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP** You can get it just by Sign Up/Login on TMDB site. Also note the script assigns `_G.CONFIG` so other fields can read it.
    * **On Tap**: copy the contents of [On\_tap.lua](./On_tap.lua).
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
      Save the button and mark it **primary** if you want the On Startup script to run automatically when you open a video.
