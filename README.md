@@ -58,7 +58,7 @@ Edit the `CONFIG` table at the top of `On_tap.lua`. Important keys:
 * `SOURCE` — Wyzie `source` query (use `"all"` to aggregate sources).
 * `ENCODING` — optional (e.g. `"utf-8"`).
 * `CURL_TIMEOUT`, `SLEEP_LOG`, `OVERWRITE`, `DEBUG_SHOW_RESPONSE_SNIPPET` — advanced/debug options.
-* **TMDB\_API\_KEY** — *required* for title→TMDb→IMDb lookup. Get a key by signing up on TMDb and copying your API key into the `CONFIG` table.
+* **TMDB\_API\_KEY** — *required*.
 
 ---
 
@@ -71,7 +71,7 @@ Edit the `CONFIG` table at the top of `On_tap.lua`. Important keys:
 
 ---
 
-## Why use IMDb ID instead of TMDb? 🎥
+## Why use IMDb ID instead of TMDb? 
 The script uses IMDb ID because IMDb is very well-known everywhere, much wider than TMDb. Even though Wyzie API support using TMDb ID but there's some movie/shows that doesn't get recognized by Wyzie API despite the correct TMDb ID. That's why IMDb ID is better to use.
 
 ---
