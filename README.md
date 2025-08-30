@@ -63,7 +63,7 @@
 ## Troubleshooting
 
 * **“Curl test failed”** — ensure `curl` is installed in Termux and network access is working. Test in Termux: `curl https://sub.wyzie.ru`.
-* **No subtitles found but you know they exist** — open `On_startup.lua` and set `SOURCE = "all"` (and try `ENCODING = "utf-8"` if needed). If `DEBUG_SHOW_RESPONSE_SNIPPET = true`, the script will show an API response snippet to help debug.
+* **No subtitles found but you know they exist** — open `On_tap.lua` and set `SOURCE = "all"` (and try `ENCODING = "utf-8"` if needed). If `DEBUG_SHOW_RESPONSE_SNIPPET = true`, the script will show an API response snippet to help debug.
 
 
 ## Files & licensing
