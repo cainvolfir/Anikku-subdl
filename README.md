@@ -1,6 +1,6 @@
 # Aniyomi — Wyzie Subtitle Downloader Button
 
-A simple **Aniyomi custom button** (Lua) that automatically searches and downloads subtitles (SRT or other formats) from the Wyzie subtitle API using `curl`. Termux-friendly.
+A simple **Aniyomi custom button** (Lua) that automatically searches and downloads subtitles (SRT or other formats) from the Wyzie subtitle API using `curl` (installed using termux).
 
 ---
 
