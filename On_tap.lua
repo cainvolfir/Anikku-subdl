@@ -1,7 +1,5 @@
 -- =========================
 -- CONFIG (edit these values)
--- Put this CONFIG at the top of the On-Startup block.
--- We also copy it to _G so On Tap / On Long-Press can access it.
 -- =========================
 local CONFIG = {
   LANG = "id",                     -- subtitle language code (e.g. "id", "en")
