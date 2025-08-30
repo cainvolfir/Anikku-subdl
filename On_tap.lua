@@ -12,7 +12,8 @@ local CONFIG = {
   OVERWRITE = true,                -- overwrite existing files  
   DEBUG_SHOW_RESPONSE_SNIPPET = true,  
   TMDB_API_KEY = "PASTE HERE", -- TMDb API key  
-  TMDB_SEARCH_MAX = 3 -- take top 3 results  
+  TMDB_SEARCH_MAX = 2, -- take top 3 results,
+  MAX_PER_IMDB = 3 -- Set to 0 or nil for unlimited (default behavior).
 }  
   
 -- Expose CONFIG globally so other fields can read it  
@@ -345,14 +346,20 @@ _G.downloadSubs = function()
       else  
         -- Filter and download matches (download all with matching language/format)  
         local download_count = 0  
-        for _, entry in ipairs(data) do  
+        for _, entry in ipairs(data) do
+          -- Minimal limit check: stop if we've reached MAX_PER_IMDB (when >0)
+          if CONFIG.MAX_PER_IMDB and CONFIG.MAX_PER_IMDB > 0 and download_count >= CONFIG.MAX_PER_IMDB then
+            log("ℹ️ Batas MAX_PER_IMDB tercapai (" .. tostring(CONFIG.MAX_PER_IMDB) .. ").")
+            break
+          end
+
           if entry and entry.url and (not entry.format or entry.format:lower() == CONFIG.FORMAT:lower()) then  
             -- name file from entry.media (sanitized) and entry.id to ensure uniqueness  
             local media_name = entry.media or entry.display or ("id_" .. tostring(entry.id or os.time()))  
             local safe_name = sanitize_filename(media_name)  
             local fname = safe_name .. "_" .. (entry.id and tostring(entry.id) or tostring(os.time())) .. "." .. CONFIG.FORMAT  
             local outpath = CONFIG.DOWNLOAD_DIR .. fname  
-  
+
             if not CONFIG.OVERWRITE then  
               local exists = utils.subprocess({ args = {"sh", "-c", "[ -f '" .. outpath .. "' ] && echo yes || echo no"}, capture_stdout = true })  
               if exists and exists.stdout and exists.stdout:match("yes") then  
@@ -360,7 +367,7 @@ _G.downloadSubs = function()
                 goto continue_download_loop  
               end  
             end  
-  
+
             log("📥 Downloading: " .. (entry.display or entry.url))  
             local dl_args = {"curl", "-s", "-L", "--max-time", tostring(CONFIG.CURL_TIMEOUT), "-o", outpath, entry.url}  
             local dl_res = utils.subprocess({ args = dl_args, cancellable = false })  
@@ -371,7 +378,7 @@ _G.downloadSubs = function()
             else  
               log("⚠️ Download failed for: " .. (entry.url or "unknown"))  
             end  
-  
+
             ::continue_download_loop::  
           end  
         end  
