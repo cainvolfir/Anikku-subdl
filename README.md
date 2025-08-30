@@ -19,6 +19,7 @@
    pkg update && pkg upgrade -y
    pkg install curl -y
    ```
+3. Grant all file access for aniyomi in your android setting
 5. Open **Aniyomi → Settings → Player → Custom Buttons → Add custom button**.
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
