@@ -26,7 +26,7 @@
    * **On tap**: copy the contents of [On\_tap.lua](./On_tap.lua). This file contains the `CONFIG` table at the top — edit it there (language, download folder, source, etc.). **MAKE SURE TO PUT YOUR TMDB API KEY IN CONFIG SETUP (You can get it just by Sign Up/Login on TMDB site.)**
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
 
-9. Open any episode or movie **wait for the video to load** then tap the custom button. The script code routine will:
+9. Open any episode or movie wait for the video to load then tap the custom button. The script code routine will:
 
    * Detect the entry title (and season/episode for series) from the entry, and grab its IMDB ID (The long algorithm is grab the entry title, find its TMDb ID using TMDb API key then use the founded TMDb ID to find its IMDb ID since searching the subtitle by Wyzie API is more accurate using IMDB ID)
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
