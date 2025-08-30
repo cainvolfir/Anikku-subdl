@@ -1,9 +1,8 @@
 
-# Anikku — Wyzie Subtitle Downloader Button
+# Aniyomi — Wyzie Subtitle Downloader Button
 
-**A customizable Anikku custom-player button that automatically searches and downloads subtitles (SRT or other formats) from a Wyzie subtitle API using `curl` (Termux-friendly).**
+**A customizable Aniyomi custom-button that automatically searches and downloads subtitles (SRT or other formats) from a Wyzie subtitle API using `curl` (Termux-friendly).**
 
-> **Target:** Anikku (an Aniyomi fork that have feature editing entry info).  
 > **Files in this repo** (paste the matching block into Anikku's Custom Button fields):
 - [On_startup.lua](./On_startup.lua) — **(required)** paste into Anikku → Custom Button → **On Startup**. Contains the `CONFIG` block and the main download routine (this is where you change language, download dir, etc.).
 - [On_tap.lua](./On_tap.lua) — paste into **On Tap** (manual re-run fallback).
@@ -21,8 +20,7 @@
    pkg update && pkg upgrade -y
    pkg install curl -y
    ```
-4. **Install [Anikku](https://github.com/komikku-app/anikku)**
-5. Open **Anikku → Settings → Player → Custom Buttons → Add custom button**.
+5. Open **Aniyomi → Settings → Player → Custom Buttons → Add custom button**.
 
 6. Copy-paste the code from the repo into the matching Custom Button fields:
 
@@ -31,22 +29,13 @@
    * **On Long-Press**: copy the contents of [On\_long.lua](./On_long.lua).
      Save the button and mark it **primary** if you want the On Startup script to run automatically when you open a video.
 
-7. Add entry to your Anikku library (movie or series) and open the entry.
-
-8. **Edit the entry to include the IMDb ID**:
-
-   * Open the entry → tap the overflow menu (three dots, top-right) → **Edit info** → paste the IMDb ID into the title field → **Save**.
->   * Make sure there's "S1 - E1" or something similar like that in your episode name. This will affect media-title.
-
-> Tip: use the included [imdb\_id.user.js](./imdb_id.user.js) userscript to copy IMDb IDs quickly from IMDb pages (save as `imdb_id.user.js` and install in Tampermonkey/Violentmonkey).
-
 9. Open any episode or movie and **wait for the video to load** (the script waits up to 90 seconds). The On Startup routine will:
 
-   * Detect the IMDb ID (and season/episode for series) from the entry,
+   * Detect the entry title (and season/episode for series) from the entry, and grab its IMDB ID
    * Query the Wyzie API using your `CONFIG` options (`language`, `format`, `source`, `encoding`),
    * Download **all** matching subtitles to the configured folder (default: `/sdcard/1DMP/`).
 
-10. Load a downloaded subtitle in Anikku by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
+10. Load a downloaded subtitle in Aniyomi by choosing **Add external subtitle** and pointing to the downloaded `.srt` file.
 
 11. If the On Startup routine didn’t run (rare), **tap** the custom button — On Tap is a manual fallback and will re-run the same routine.
 
@@ -76,20 +65,11 @@
 
 ---
 
-## Userscript
-
-* The repo includes `imdb_id.user.js` — save it with the `.user.js` extension and open in a userscript manager like **Tampermonkey** or **Violentmonkey**. The userscript adds an easy copy button to IMDb pages to extract the `tt...` ID.
-* Userscripts generally use `.user.js` so browsers/userscript managers can install them directly.
-
----
-
 ## Troubleshooting
 
 * **“Curl test failed”** — ensure `curl` is installed in Termux and network access is working. Test in Termux: `curl https://sub.wyzie.ru`.
 * **No subtitles found but you know they exist** — open `On_startup.lua` and set `SOURCE = "all"` (and try `ENCODING = "utf-8"` if needed). If `DEBUG_SHOW_RESPONSE_SNIPPET = true`, the script will show an API response snippet to help debug.
-* **Title parsing fails** — verify the Anikku entry’s media title contains a valid IMDb ID (e.g. `tt1234567`). You can paste the IMDb ID in Edit Info manually or use the userscript to copy it.
 
----
 
 ## Files & licensing
 
@@ -98,7 +78,6 @@ This repo contains:
 * `On_startup.lua` — main script + `CONFIG`
 * `On_tap.lua` — manual trigger
 * `On_long.lua` — delete downloaded subtitles
-* `imdb_id.user.js` — userscript helper
 * `README.md`, `LICENSE` (MIT), `.gitignore`
 
 **License:** MIT (see `LICENSE` file)
@@ -115,5 +94,3 @@ This repo contains:
 ## Useful links
 
 * Termux (F-Droid): `https://f-droid.org/en/packages/com.termux/`
-* Anikku (example source): `https://github.com/komikku-app/anikku`
-* Tampermonkey (userscript manager): `https://www.tampermonkey.net/`
