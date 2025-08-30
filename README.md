@@ -20,7 +20,7 @@ Tap the custom button while playing an episode or movie in Aniyomi: the script f
 
 ## Quick install & usage (concise step-by-step)
 
-1. Install [Termux]([https://f-droid.org/en/packages/com.termux/](https://f-droid.org/en/packages/com.termux/)) (F‑Droid link).
+1. Install [Termux](https://f-droid.org/en/packages/com.termux) (F‑Droid link).
 
 2. Open Termux and update packages, then install `curl`:
 
