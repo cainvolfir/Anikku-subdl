@@ -11,7 +11,7 @@ local CONFIG = {
   SLEEP_LOG = 0.45,                -- pause between aniyomi.show_text calls
   OVERWRITE = true,                -- overwrite existing files
   DEBUG_SHOW_RESPONSE_SNIPPET = true,
-  TMDB_API_KEY = "bcf833309792fce7460c16aeaff12f44", -- TMDb API key
+  TMDB_API_KEY = "PASTE HERE", -- TMDb API key
   TMDB_SEARCH_MAX = 3 -- take top 3 results
 }
 
